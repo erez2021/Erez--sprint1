@@ -8,9 +8,16 @@
     </title>
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body onload="init()">  
+<body onload="init(4,2)">  
    <h1>MINE SWEEPER</h1> 
-<div class = "timer">timer: </div>
+   <h2>Seconds left: <span class="time">90</span></h2>
+   <button class="start">start</button>
+
+   <button onclick="init(4,2)">easy</button>
+   <button onclick="init(8,8)">medium</button>
+   <button onclick="init(12,30)">hard</button>
+
+
    <table class="table">
     <tbody class="board"></tbody>
 </table>
