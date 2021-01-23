@@ -1,6 +1,6 @@
 body {
     text-align: center;
-    background-color: lightblue;
+    background-image :url(/mine-sweeper.png);
 }
 
 table {
@@ -12,7 +12,7 @@ h1 {
     color: blue;
 }
 
-button {
+input {
     height: 30px;
     width: 70px;
     background-color: lightsteelblue;
@@ -39,6 +39,10 @@ button {
 
 
 .clicked {
-    background-color: lightgrey
+    background-color: rgb(194, 108, 108)
+}
+
+img {
+    margin-top: 100px;
 }
 

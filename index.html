@@ -10,14 +10,14 @@
 </head>
 <body onload="init(4,2)">  
    <h1>MINE SWEEPER</h1> 
-   <h2>Seconds left: <span class="time">90</span></h2>
-   <button class="start">start</button>
+   <h2>time:</h2>
+   
+  
 
-   <button onclick="init(4,2)">easy</button>
-   <button onclick="init(8,8)">medium</button>
-   <button onclick="init(12,30)">hard</button>
-
-
+   <input type="button" value="easy" onclick="changeLevel(this.value)">
+   <input type="button" value="medium" onclick="changeLevel(this.value)">
+   <input type="button" value="hard" onclick="changeLevel(this.value)">
+   
    <table class="table">
     <tbody class="board"></tbody>
 </table>

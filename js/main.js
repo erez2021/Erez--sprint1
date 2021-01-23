@@ -7,23 +7,13 @@ const EMPTY = ''
 
 var gBoard;
 
-var gInterval;
+var gInterval = setInterval(showTime, 1000)
 
 
-// var gLevel= {
-//     SIZE: 4,
-//     MINES: 2
-// };
-
-//  var gLevel2 =  {
-//     SIZE: 8,
-//     MINES: 12
-// }
-
-// var gLevel3 =  {
-//     SIZE: 12,
-//     MINES: 30
-// }
+var gLevel = {
+    SIZE: 4,
+    MINES: 2
+};
 
 var gGame = {
     isOn: false,
@@ -33,7 +23,7 @@ var gGame = {
 }
 
 function init(SIZE, MINE) {
-    (gGame.isOn)
+    gGame.isOn = true
     gBoard = buildBoard(SIZE)
     for (var i = 0; i < MINE; i++) {
         addMine()
@@ -51,7 +41,7 @@ function buildBoard(SIZE) {
                 minesAroundCount: 0,
                 isShown: false,
                 isMine: false,
-                isMarked: true
+                isMarked: false
             }
 
         }
@@ -71,38 +61,49 @@ function renderBoard(board) {
             var className = ''
             if (cell.isMine) className = 'mine'
 
-            strHTML += `<td class="cell ${className}" data-i=""
-            data-j="" oncontextmenu="cellMarked(this)" onclick="cellClicked(this, ${i}, ${j})" >
+            strHTML += `<td class="cell ${className}" data-i="${i}"
+            data-j="${j}" oncontextmenu="cellMarked(this)" onclick="cellClicked(this, ${i}, ${j})" >
             </td>\n`
         }
         strHTML += `</tr>\n`
     }
-    console.log(strHTML);
+
     var elBoard = document.querySelector('.board');
     elBoard.innerHTML = strHTML;
 
 }
 
 function cellClicked(elCell, i, j) {
-    checkGameOver()
-    if (elCell.classList.contains('mine')) {
-        console.log('game over')
-        elCell.innerText = MINE
-        return false
-    } else {
-        elCell.classList.add('clicked')
-        gBoard[i][j].minesAroundCount = setMinesNegsCount(gBoard, i, j)
-        elCell.style.backgroundColor = 'grey'
-        elCell.innerText = gBoard[i][j].minesAroundCount
+    if (!gGame.isOn) return
+    if (gBoard[i][j].isShown) return
+    gBoard[i][j].isShown = true
+    elCell.classList.add('clicked')
 
-            }
+    if (!gBoard[i][j].isMine) {
+        if (gBoard[i][j].minesAroundCount = setMinesNegsCount(gBoard, i, j)) {
+            elCell.innerText = gBoard[i][j].minesAroundCount
+        } else {
+            expandShown(gBoard, i, j)
+            elCell.innerText = 0
         }
-    
+    }
+    if (elCell.classList.contains('mine')) {
+        elCell.innerText = MINE
+        gameOver()
 
- 
+    }
+}
+
 
 function cellMarked(elCell) {
     document.addEventListener('contextmenu', event => event.preventDefault());
+    var posI = elCell.dataset.i
+    var posJ = elCell.dataset.j
+    if (gBoard[posI][posJ].isShown) return
+    // update model
+    gBoard[posI][posJ].isMarked = true
+    gGame.markedCount++
+    // update dom
     elCell.innerText = FLAG
 }
 
@@ -136,13 +137,36 @@ function getRandomInt(max) {
 }
 
 
-function checkGameOver() {
-    (!gGame.isOn)
+function gameOver() {
+    (gGame.isOn = false)
+    alert('game over')
+    countSec = 0
+    gInterval = clearInterval(showTime, 1000)
 }
 
-function expandShown(board, elCell,
-    i, j) {
+
+
+function expandShown(board, rowIdx, colIdx) {
+    for (var i = rowIdx - 1; i <= rowIdx + 1; i++) {
+        if (i < 0 || i > board.length - 1) continue;
+        for (var j = colIdx - 1; j <= colIdx + 1; j++) {
+            var currCell = board[i][j];
+            if (j < 0 || j > board[0].length - 1) continue;
+            if (i === rowIdx && j === colIdx) continue;
+            else if (currCell.isMarked || currCell.isMine || currCell.isShown)
+                continue;
+
+            currCell.isShown = true;
+            gGame.shownCount++;
+            var elNegsCell = document.querySelector(
+                `[data-i="${i}"][data-j="${j}"]`
+            );
+            elNegsCell.classList.add('clicked');
+            elNegsCell.innerText = setMinesNegsCount(gBoard, i, j)
+        }
+    }
 }
+
 
 
 function setMinesNegsCount(mat, cellI, cellJ) {
@@ -153,6 +177,7 @@ function setMinesNegsCount(mat, cellI, cellJ) {
         for (var j = cellJ - 1; j <= cellJ + 1; j++) {
             if (i === cellI && j === cellJ || j < 0 || j >= mat[i].length) continue
             if (mat[i][j].isMine) {
+                mat[cellI][cellJ].minesAroundCount++
                 count++
             }
         }
@@ -160,19 +185,55 @@ function setMinesNegsCount(mat, cellI, cellJ) {
     return count
 }
 
-document.addEventListener('DOMcontentLoaded', () => {
-    var time = document.querySelector('.time')
-    var start = document.querySelector('.start')
-    var timeLeft = 90
+function openNegsCount(mat, cellI, cellJ) {
 
-    function countDown() {
-        setInterval(function () {
-            if (timeLeft <= 0) {
-                clearInterval(timeLeft = 0)
+    for (var i = cellI - 1; i <= cellI + 1; i++) {
+        if (i < 0 || i >= mat.length) continue;
+        for (var j = cellJ - 1; j <= cellJ + 1; j++) {
+            if (i === cellI && j === cellJ || j < 0 || j >= mat[i].length) continue
+            if (mat[cellI][cellJ].minesAroundCount === 0) {
+                gGame.shownCount = true
+
             }
-            time.innerHTML = timeLeft
-            timeLeft -= 1
-        }, 1000)
+        }
     }
-    start.addEventListener('click', countDown)
-})
+}
+
+
+var countSec = -1
+
+function showTime() {
+    countSec += 1
+    var elCount = document.querySelector('h2')
+    gGame.secsPassed = countSec
+    elCount.innerText = "Time: " + countSec
+}
+
+function changeLevel(Level) {
+    switch (Level) {
+        case 'easy':
+            init(4, 2)
+            countSec = -1
+            break;
+
+        case 'medium':
+            init(8, 8)
+            countSec = -1
+            break;
+
+        case 'hard':
+            init(12, 30)
+            countSec = -1
+            break;
+    }
+}
+
+
+// function checkWin () {  not working!!
+//     for (var i = 0; i < gBoard.length; i++) {
+//         for (var j = 0; j <gBoard[0].length; j++) {
+//            currCell =  gBoard[i][j] 
+//            if (!currCell === !gBoard.isShown) alert ('win')
+//         }
+//     }
+//         }
